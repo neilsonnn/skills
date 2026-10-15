@@ -1,0 +1,20 @@
+{
+  "name": "worldlabs",
+  "interface": {
+    "displayName": "World Labs"
+  },
+  "plugins": [
+    {
+      "name": "worldlabs",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

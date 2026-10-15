@@ -1,0 +1,43 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "worldlabs",
+  "version": "0.1.0",
+  "description": "Create with Atlas APIs and tools",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "World Labs",
+        "shortDescription": "Create with Atlas and Blender",
+        "developerName": "World Labs",
+        "category": "Productivity",
+        "composerIcon": "./assets/worldlabs-logo.png",
+        "logo": "./assets/worldlabs-logo.png",
+        "websiteURL": "https://www.worldlabs.ai",
+        "privacyPolicyURL": "https://www.worldlabs.ai/privacy-policy",
+        "termsOfServiceURL": "https://www.worldlabs.ai/terms-of-service",
+        "longDescription": "Use the World Labs CLI to generate and edit images, estimate cameras and depth, and work with API tasks and assets. Connect to the Atlas Blender add-on to inspect RGBD frames, arrange scenes, generate views, and build editable grayboxes. API workflows require Node.js 24+, the World Labs CLI, and an API key with task access. Blender workflows require local shell access, Python 3.10+, and Blender 5.1+ with Atlas enabled. Tools are installed separately from this plugin.",
+        "defaultPrompt": [
+          "Show me which World Labs API tasks are available.",
+          "Inspect the frames in my open Atlas Blender scene.",
+          "Build a graybox from my Atlas images."
+        ]
+      }
+    }
+  },
+  "homepage": "https://www.worldlabs.ai",
+  "repository": "https://github.com/worldlabsai/skills",
+  "author": {
+    "name": "World Labs",
+    "url": "https://www.worldlabs.ai",
+    "email": "support@worldlabs.ai"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "worldlabs",
+    "atlas",
+    "blender",
+    "3d",
+    "images",
+    "graybox"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "worldlabs",
+  "owner": {
+    "name": "World Labs"
+  },
+  "plugins": [
+    {
+      "name": "worldlabs",
+      "source": "./",
+      "description": "Create with Atlas APIs and tools"
+    }
+  ],
+  "description": "Create with Atlas APIs and tools"
+}

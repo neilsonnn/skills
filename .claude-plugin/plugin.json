@@ -1,0 +1,26 @@
+{
+  "name": "worldlabs",
+  "version": "0.1.0",
+  "description": "Create with Atlas APIs and tools",
+  "author": {
+    "name": "World Labs",
+    "url": "https://www.worldlabs.ai",
+    "email": "support@worldlabs.ai"
+  },
+  "homepage": "https://www.worldlabs.ai",
+  "repository": "https://github.com/worldlabsai/skills",
+  "displayName": "World Labs",
+  "icon": "./assets/worldlabs-logo.png",
+  "license": "Apache-2.0",
+  "keywords": [
+    "worldlabs",
+    "atlas",
+    "blender",
+    "3d",
+    "images",
+    "graybox"
+  ],
+  "documentationUrl": "https://atlas-beta.worldlabs.ai/docs",
+  "privacyPolicyUrl": "https://www.worldlabs.ai/privacy-policy",
+  "termsOfServiceUrl": "https://www.worldlabs.ai/terms-of-service"
+}

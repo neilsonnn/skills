@@ -1,0 +1,5 @@
+interface:
+  icon_small: "../../assets/worldlabs-logo.svg"
+  icon_large: "../../assets/worldlabs-logo.svg"
+  display_name: "World Labs"
+  short_description: "Use the World Labs API through its CLI"
