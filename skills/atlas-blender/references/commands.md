@@ -76,7 +76,7 @@ A disconnected client does not cancel a submitted job. Check existing jobs befor
 
 ```python
 print(atlas("frames.inspect", frameId="FRAME_ID"))
-bpy.ops.atlas.toggle_clouds()
+bpy.ops.atlas.toggle_points()
 ```
 
 Use native object selection, visibility, transforms, camera tools, and Blender save operations. Point visibility does not change Atlas context membership.
