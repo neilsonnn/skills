@@ -1,141 +1,78 @@
-# Atlas command recipes
+# Atlas Blender calls
 
-Set `ATLAS_CLI` to the absolute client path and `ATLAS_SESSION` to a discovered session ID.
-Set `ATLAS_PYTHON` to a Python 3.10+ interpreter (for example, `python3`). Replace frame IDs and file paths with
-values from the session. Run `--help` on a subcommand for its current options.
+Execute these snippets inside Blender through MCP or another Python execution method. The operator works regardless of the extension's installed Python package name.
 
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" sessions list
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" frames list
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" frames inspect "$FRAME_ID"
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" buffers sample "$FRAME_ID" --pixel 640 600
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" buffers export "$FRAME_ID" --output /tmp/atlas-frame
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" pose --files /absolute/room.jpg --mode separate --wait
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" filters set "$FRAME_ID" z_min=0.2 z_max=12 x_min=0.1 x_max=0.9
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" frames hide "$FRAME_ID"
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" jobs status
+```python
+import bpy
+import json
+
+def atlas(command, **args):
+    bpy.ops.atlas.command(request_json=json.dumps({"command": command, "args": args}))
+    response = json.loads(bpy.context.window_manager.atlas_result)
+    if not response["ok"]:
+        raise RuntimeError(response["error"]["message"])
+    return response["result"]
+
+print(atlas("frames.list"))
 ```
 
-`generate` accepts only depth-ready frames whose cameras are visible. Blender camera visibility is the context switch across generation, projection, Compare Context, and baking, including visibility inherited from collections and view layers. Hiding only a cloud changes display. Use `frames hide FRAME_ID` and `frames hide FRAME_ID --show` to control camera visibility.
+Read frame IDs, camera names, and job IDs from results. Online posing and generation require **Allow Online Access** and an API key in Atlas **Settings > Connection**. Local imports work offline.
 
-Omitted generation prompt, enhancement, and depth options inherit the scene's saved Generate
-settings; omitted `--context-ids` uses all visible, depth-ready frames. Explicit `--prompt`,
-`--enhance-prompt` / `--no-enhance-prompt`, and `--return-depth` / `--no-return-depth` override them.
-After importing an enhanced result, Atlas saves `promptUsed`, reuses it as Prompt, and turns
-enhancement off unless the user edited those settings during the request. Do not re-enhance the
-saved text on every call. `jobs status` includes `promptUsed` when returned.
+## Import
 
-**Generate from View** submits from the current viewport or viewed camera. Its adjacent camera
-toggle enters or leaves preview. **Import and Pose Images** has its own row, followed by
-collapsed **Generate settings** and **Show Atlas Context**. Selecting a camera shows **View**,
-**Delete**, **Duplicate**, and **Hide**, plus **Show Image**, **Image Opacity**, **RGB**, **Depth**,
-and **Confidence**. Point filters are inside collapsed **Image settings**. The strip and native
-camera selection drive the same selected-camera controls. **CLI Actions** contains comparison
-and maintenance operations. The import file picker contains estimate/reconstruct and
-preserve-framing options.
-Use raw `frames.duplicate` with `frameId` to copy a frame camera and its cloud independently.
-
-Set a row-major camera-to-world matrix. This example preserves the Blender camera's identity
-orientation and places it at `(0, -4, 1.6)`; it looks down world -Z. For a room view, calculate
-the rotation as described in the placement reference instead of copying this orientation.
-
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" camera set "$FRAME_ID" \
-  --matrix-world '[[1,0,0,0],[0,1,0,-4],[0,0,1,1.6],[0,0,0,1]]'
+```python
+print(atlas("project.import", path="/absolute/path/to/project"))
 ```
 
-For UI generation, inspect the target camera in camera view with Passepartout enabled before
-submitting. Adjust its pose and lens against that preview, then use **Generate from View**; the
-request records the exact evaluated pose and lens shown in the preview. The CLI path below remains
-available when an explicit target camera is required.
+A camera JSON path also works. Atlas prefers `cameras.json`, otherwise one unambiguous supported JSON. Manifests accept a camera list or a `frames`/`cameras` list containing calibration and local image paths. Depth and confidence can be explicit or companion files. Missing or ambiguous inputs produce errors; do not invent calibration.
 
-`raw` accepts a JSON file or JSON text. The CLI supplies schema version, UUID, and deadline.
-A saved file is preferable for matrices and multiline prompts.
+For unposed images of the same subject:
 
-```json
-{"command":"camera.create","args":{"name":"Room target","matrixWorld":[[1,0,0,0],[0,0,-1,-4],[0,1,0,1.6],[0,0,0,1]]}}
+```python
+print(atlas("pose", files=["/absolute/path/front.png", "/absolute/path/side.png"], mode="reconstruct"))
 ```
 
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw target.json
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" generate --target-names 'Room target' \
-  --context-ids "$FRAME_ID" --return-depth --prompt 'A coherent concrete room' --wait
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"cache.pack","args":{}}'
+Use `mode="separate"` for independent images. Posing requests depth; imported depth creates point clouds parented to the cameras.
+
+## Generate
+
+Use actual target camera names from the scene:
+
+```python
+print(atlas("generate", targetNames=["Camera A", "Camera B"], prompt="Describe the subject", returnDepth=True))
+print(atlas("chisel", targetNames=["Camera A", "Camera B"], prompt="Describe the scene", returnDepth=True))
 ```
 
-Raw commands also include `frames.select`, `frames.view`, `frames.reset_calibration`,
-`buffers.open`, `jobs.resume`, `jobs.import`, and `cache.relink`. Use the recipes below for supported arguments; do not guess undocumented command fields. Inside Blender, the namespace-independent
-entry point is `bpy.ops.atlas.command(request_json=json.dumps(request))`; read the JSON reply
-from `bpy.context.window_manager.atlas_result`.
+These are alternatives: `generate` uses visible, depth-ready Atlas cameras as context; `chisel` uses scene geometry depth. Chisel needs at least two target positions for RGBD; one produces RGB only. Omit prompt and depth arguments to use the scene's Atlas settings.
 
-Inspect `ok`, `error`, and `revision` in each response. Use `--expected-revision` where supported
-when a human may be editing concurrently. Keep a request ID when retrying an uncertain operation.
+## Splats
 
-## Generate from scene geometry
-
-Use `chisel` when the user wants geometry-conditioned images. It renders visible
-scene surfaces as depth-only context and does not send the existing images or mesh
-files. This is separate from `generate`, which continues to use visible RGBD frames.
-Your API account must have access to `atlasChisel`. Use `chisel --help` for sampling
-options. In Blender, enable **Generate from graybox depth (Chisel)** in **Generate settings**.
-Use selected perspective cameras for multiple views.
-
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" --timeout 300 chisel \
-  --target-names 'Room camera A' 'Room camera B' \
-  --prompt 'A warm plaster room' --return-depth --wait --timeout-secs 1800
+```python
+print(atlas("splat"))
 ```
 
-Preview target cameras before submitting. Single-view results are RGB only; use
-at least two translated cameras and `--return-depth` when subsequent RGBD
-projection, generation, or baking needs the outputs. Chisel returns reconstructed
-depth, not the original rendered depth. It does not modify the source graybox.
+Requires Blender 5.3+, internal API access, and at least two visible depth-ready context images
+at the same resolution. Defaults to a draft; pass `refine=True` for the longer refinement run.
+The result imports as a native Gaussian splat object saved in the `.blend`. `jobs.import` returns
+`objectNames` for splats; image jobs return `frameIds`.
 
-## Graybox projection
+## Jobs
 
-Create and position simple mesh primitives (cubes, cylinders, spheres, and others) with Blender tools, then register their exact object names:
+Submission returns job IDs. Let Blender's event loop run between calls; do not block it with a polling loop or sleep. Background scripts must call the loaded Atlas package's `tick()` to advance jobs because the UI timer does not run there.
 
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.assign","args":{"objectNames":["Graybox floor","Graybox wall"]}}'
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.projection","args":{"enabled":true,"strength":0.5,"depthTolerance":0.5}}'
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.list"}'
+```python
+print(atlas("jobs.status"))
+print(atlas("jobs.status", jobId="JOB_ID"))
+print(atlas("jobs.import", jobId="JOB_ID"))  # Import a ready result.
 ```
 
-Use `enabled:false` to restore the primitives' normal materials. Assignment is repeatable; it does not
-create geometry or replace material slots. `strength` blends lit gray (0) with the
-projected color (1); the surface stays opaque. The depth tolerance uses Blender scene units.
+A disconnected client does not cancel a submitted job. Check existing jobs before resubmitting. `jobs.cancel` and `jobs.resume` also take `jobId`.
 
-## Graybox alignment comparison
+## Images and points
 
-Compare registered mesh first-hit depths with source depth through calibrated source cameras:
-
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.compare","args":{"frameIds":["FRAME_ID"],"tolerance":0.25,"stride":4}}'
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.comparison","args":{}}'
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" raw '{"command":"graybox.show_comparison","args":{"frameId":"FRAME_ID","channel":"overlay"}}'
+```python
+print(atlas("frames.inspect", frameId="FRAME_ID"))
+bpy.ops.atlas.toggle_clouds()
 ```
 
-`frameIds` defaults to the active frame. `tolerance` is positive scene units and defaults to the
-scene setting (0.25); `stride` is a positive integer from 1 through 64 and defaults to 4. Results
-use positive optical-axis depth and do not assume scene units are meters. Source depth, confidence,
-and normalized XY filters apply. Display `preview_stride` and `point_size` are ignored. Each view
-reports per-object sample count, median signed and absolute depth error, p90 absolute error, fraction
-within tolerance, and separate coverage and missing-hit counts.
-
-The UI actions **Compare Active Depth** and **Compare Context Depth** compute snapshots on demand. **Compare
-Context Depth** uses all visible, depth-ready frames, matching generation context. Outputs are
-stored below the companion `alignment/<runid>` directory: `report.json`, per-view `arrays.npz` with
-`rgb`, `estimatedDepth`, `grayboxDepth`, `residual`, `validMask`, `sourceMask`, and `objectIndex`,
-and `overlay.png`, `residual.png`, and `rgb.png`. Overlay colors are blue for too close, red for too
-far, and magenta for valid source depth without a graybox hit; excluded pixels retain RGB. Heatmaps
-use white for zero error and saturate at +/-2*tolerance.
-
-`graybox.comparison` returns the latest in-memory report and a stale flag, or an empty result before
-comparison and after a new load. `graybox.show_comparison` defaults to the active frame and the
-`overlay` channel; `residual` and `rgb` are also supported. It opens an existing non-Atlas Image
-Editor or splits a view, and returns the path in headless mode. Recompute after geometry, camera, or
-filter edits. The command does not fit geometry or treat source depth as ground truth.
-
-Global metrics can hide poor alignment on small objects behind a large wall area. Contour error can
-reflect object size or silhouette rather than pure translation; compare conflicting generated and
-source depth before minimizing either one blindly.
+Use native object selection, visibility, transforms, camera tools, and Blender save operations. Point visibility does not change Atlas context membership.

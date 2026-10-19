@@ -7,8 +7,8 @@
     {
       "name": "worldlabs",
       "source": "./",
-      "description": "Create with Atlas APIs and tools"
+      "description": "Use World Labs APIs and Atlas for Blender"
     }
   ],
-  "description": "Create with Atlas APIs and tools"
+  "description": "Use World Labs APIs and Atlas for Blender"
 }

@@ -7,7 +7,7 @@ Agent skills for the World Labs API and Atlas for Blender, packaged as one plugi
 | Skill | What it does |
 | --- | --- |
 | `worldlabs` | Generate and edit images, estimate cameras and depth, and manage API tasks and assets. |
-| `atlas-blender` | Pose images, inspect RGBD, build grayboxes, arrange scenes, and generate views in Blender. |
+| `atlas-blender` | Import calibrated projects, pose images, inspect point clouds, generate views, and create native Gaussian splats in Blender. |
 
 ## Install
 
@@ -46,19 +46,19 @@ shell. Task availability depends on your account's access.
 
 ### Atlas for Blender
 
-The Blender skills require Blender 5.1 or newer, the Atlas Blender add-on, and Python 3.10 or newer.
-The plugin includes the companion CLI. Download the [Atlas add-on ZIP](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/worldlabs_atlas-0.1.0.zip)
-and [SHA-256 checksum](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/SHA256SUMS).
-Install the ZIP through Blender's **Preferences > Get Extensions > Install from Disk** and enable Atlas.
+Atlas requires Blender 5.1+ and a separately installed Atlas extension. Blender MCP is strongly
+recommended for agent access; Blender's Python Console, Text Editor, or background Python also work.
+Gaussian splats require Blender 5.3+ and internal API access.
 
-Follow the [Blender setup guide](skills/atlas-blender/references/setup.md) to install the add-on
-and verify the connection before editing a scene. Pose and generation also require a World Labs API key.
+This skill targets the unreleased Blender Python API. Use an updated supplied extension build;
+the currently published ZIP still uses the old CLI. See [setup](skills/atlas-blender/references/setup.md)
+for installation and a read-only compatibility check.
 
 ## Try it
 
 - “List the tasks available through the World Labs API.”
 - “Find my open Atlas Blender session and inspect its frames without changing anything.”
-- “Build a medium-detail graybox from the Atlas frames in this scene.”
+- “Import this calibrated Atlas project and inspect its cameras and point clouds.”
 
 ## Development
 
@@ -73,16 +73,10 @@ For Codex, register the checkout with `codex plugin marketplace add "$PWD"`, the
 `worldlabs@worldlabs`. After edits, remove and reinstall the plugin to refresh its cached copy.
 For Claude Code, run `claude --plugin-dir "$PWD"` and restart the session after edits.
 
-Validate the plugin and run the Blender CLI tests:
-
-```sh
-claude plugin validate --strict .
-PYTHONPATH=skills/atlas-blender/scripts python3 -m unittest discover -s tests -p 'test_*.py'
-```
+Validate the plugin metadata with `claude plugin validate --strict .`.
 
 Use the [test scenarios](tests/scenarios.md) to check skill selection and tool behavior.
-Both hosts share the same `skills/` content. Keep the bundled Blender CLI compatible with the
-Atlas add-on release used for testing.
+Both hosts share the same `skills/` content.
 
 ## License
 

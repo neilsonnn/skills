@@ -2,7 +2,7 @@ interface:
   icon_small: "../../assets/worldlabs-logo.svg"
   icon_large: "../../assets/worldlabs-logo.svg"
   display_name: "Atlas for Blender"
-  short_description: "Build 3D rooms from posed images in Blender"
-  default_prompt: "Use $atlas-blender to inspect my images and assemble a room in Blender."
+  short_description: "Import, pose, and generate scenes in Blender"
+  default_prompt: "Use $atlas-blender to inspect my Atlas frames or import and pose images in Blender."
 policy:
   allow_implicit_invocation: true

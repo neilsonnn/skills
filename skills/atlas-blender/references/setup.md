@@ -1,47 +1,42 @@
 # Set up Atlas for Blender
 
-Requires Blender 5.1 or newer and Python 3.10 or newer. The Atlas add-on is distributed
-separately from this plugin. Download [worldlabs_atlas-0.1.0.zip](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/worldlabs_atlas-0.1.0.zip)
-and use its local path for installation. A [SHA-256 checksum](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/SHA256SUMS)
-is also available.
-Do not substitute the Blender MCP add-on or install `atlas_cli.py` as an add-on.
+Requires Blender 5.1 or newer. Gaussian splats require Blender 5.3+ and internal API access.
+The Atlas extension is installed separately from this agent plugin. This skill requires an updated
+supplied build with `bpy.ops.atlas.command`. The published
+[ZIP](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/worldlabs_atlas-0.1.0.zip) and
+[checksum](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/SHA256SUMS) still point to the older
+CLI build; use the supplied preview until that download is updated.
 
-## Install the add-on
+## Install and configure
 
-1. Open the Blender installation the user intends to use.
-2. In **Preferences > Get Extensions**, open the menu and choose **Install from Disk**.
-   Select the separately downloaded `worldlabs_atlas-0.1.0.zip` and enable Atlas.
-3. In a 3D View, open the sidebar with **N** and find the **Atlas** tab. Keep Blender open.
+1. In the intended Blender installation, open **Preferences > Get Extensions > Install from Disk**;
+   select the supplied extension ZIP and enable Atlas.
+2. For online posing and generation, enable **Allow Online Access** in Blender Preferences and
+   enter the World Labs API key in the Atlas sidebar under **Settings > Connection**. Local imports
+   work offline. Keep keys out of chat.
+3. Keep the Blender project open. Blender MCP is recommended for agent access; Python Console,
+   Text Editor, or background Python also work.
 
-## Verify the connection
+## Verify the add-on
 
-Resolve `ATLAS_CLI` to `../scripts/atlas_cli.py` relative to this reference file, or use the
-user's configured path. Set `ATLAS_PYTHON` to a Python 3.10+ executable, such as `python3`.
+Run this from Blender's Python environment. It lists Atlas frames without editing scene objects or
+making an online request:
 
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" sessions list
+```python
+import bpy
+import json
+
+try:
+    bpy.ops.atlas.command.get_rna_type()
+except KeyError as exc:
+    raise RuntimeError("Enable an Atlas build with bpy.ops.atlas.command support") from exc
+
+bpy.ops.atlas.command(request_json=json.dumps({"command": "frames.list", "args": {}}))
+response = json.loads(bpy.context.window_manager.atlas_result)
+if not response.get("ok"):
+    raise RuntimeError(response.get("error", {}).get("message", "Atlas request failed"))
+print(response["result"])
 ```
 
-Choose a session with `live: true` and match its PID and `blendFile` to the intended project, then set `ATLAS_SESSION` to
-its `sessionId` and run:
-
-```sh
-"$ATLAS_PYTHON" "$ATLAS_CLI" --session "$ATLAS_SESSION" frames list
-```
-
-Require `ok: true`. An empty frame list is valid. These checks do not upload images or require an API key.
-
-| Problem | Check |
-| --- | --- |
-| No Atlas tab | Confirm the extension installed successfully and is enabled in this Blender version. |
-| No sessions | Keep Blender open and responsive. Confirm Atlas is enabled. |
-| Several sessions | Match the project and PID; do not silently choose a different scene. |
-| Session shown in Blender but absent from the CLI | If `ATLAS_SESSION_ROOT` is set, use the same directory in Blender and the agent's shell. |
-| Command timeout | Close blocking Blender dialogs and inspect the scene or jobs before retrying. |
-
-## Enable API operations
-
-Pose and generation require **Allow Online Access** in Blender Preferences and a World Labs API
-key with the relevant task access. Enter the key in Atlas settings; it is saved in Blender-wide
-preferences. Alternatively, set `WLT_API_KEY` in Blender's environment. Never ask users to paste
-a key into chat.
+An empty frame list is valid. For operator syntax and import, posing, generation, and job commands,
+see [commands](commands.md).
