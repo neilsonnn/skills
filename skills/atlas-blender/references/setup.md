@@ -1,6 +1,6 @@
 # Set up Atlas for Blender
 
-Requires Blender 5.1 or newer. Gaussian splats require Blender 5.3+ and internal API access.
+Requires Blender 5.3 or newer. Gaussian splats require internal API access.
 The Atlas extension is installed separately from this agent plugin. This skill requires an updated
 supplied build with `bpy.ops.atlas.command`. The published
 [ZIP](https://cdn.atlas-beta.worldlabs.ai/showcase/blender/worldlabs_atlas-0.1.0.zip) and
@@ -25,6 +25,9 @@ making an online request:
 ```python
 import bpy
 import json
+
+if bpy.app.version < (5, 3, 0):
+    raise RuntimeError("Atlas requires Blender 5.3 or newer")
 
 try:
     bpy.ops.atlas.command.get_rna_type()

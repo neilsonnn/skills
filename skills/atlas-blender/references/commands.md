@@ -34,7 +34,7 @@ print(atlas("pose", files=["/absolute/path/front.png", "/absolute/path/side.png"
 
 Use `mode="separate"` for independent images. Posing requests depth; imported depth creates point clouds parented to the cameras.
 
-## Generate
+## Atlas and Chisel generation
 
 Use actual target camera names from the scene:
 
@@ -43,7 +43,7 @@ print(atlas("generate", targetNames=["Camera A", "Camera B"], prompt="Describe t
 print(atlas("chisel", targetNames=["Camera A", "Camera B"], prompt="Describe the scene", returnDepth=True))
 ```
 
-These are alternatives: `generate` uses visible, depth-ready Atlas cameras as context; `chisel` uses scene geometry depth. Chisel needs at least two target positions for RGBD; one produces RGB only. Omit prompt and depth arguments to use the scene's Atlas settings.
+These are alternatives: Atlas (`generate`) uses visible, depth-ready cameras as context; Chisel (`chisel`) uses scene geometry depth. Chisel needs at least two target positions for RGBD; one produces RGB only. Omit prompt and depth arguments to use the scene's Atlas settings.
 
 ## Splats
 
@@ -51,8 +51,12 @@ These are alternatives: `generate` uses visible, depth-ready Atlas cameras as co
 print(atlas("splat"))
 ```
 
-Requires Blender 5.3+, internal API access, and at least two visible depth-ready context images
-at the same resolution. Defaults to a draft; pass `refine=True` for the longer refinement run.
+Usually gather at least 8 posed context images for a compact scene, and 16 or more for a larger
+scene. Increase coverage with scene size; additional nearly identical views do not cover unseen
+regions. Use visible, depth-ready images at the same resolution. The endpoint accepts two images,
+but that is a technical lower limit, not the usual context target.
+
+Requires internal API access. Defaults to a draft; pass `refine=True` for the longer refinement run.
 The result imports as a native Gaussian splat object saved in the `.blend`. `jobs.import` returns
 `objectNames` for splats; image jobs return `frameIds`.
 

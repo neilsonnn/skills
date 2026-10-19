@@ -15,7 +15,7 @@
         "websiteURL": "https://www.worldlabs.ai",
         "privacyPolicyURL": "https://www.worldlabs.ai/privacy-policy",
         "termsOfServiceURL": "https://www.worldlabs.ai/terms-of-service",
-        "longDescription": "Use the World Labs CLI to generate and edit images, estimate cameras and depth, and work with API tasks and assets. Atlas for Blender imports calibrated projects, poses images, generates views with Viewgen or Chisel, and creates native Gaussian splats. API workflows require Node.js 24+, the World Labs CLI, and an API key with task access. Blender workflows require Blender 5.1+ with Atlas enabled; Blender MCP is recommended, with ordinary Blender Python as an alternative. Splats require Blender 5.3+ and internal API access. Tools are installed separately from this plugin.",
+        "longDescription": "Use the World Labs CLI to generate and edit images, estimate cameras and depth, and work with API tasks and assets. Atlas for Blender imports calibrated projects, poses images, generates views with Atlas or Chisel, and creates native Gaussian splats. API workflows require Node.js 24+, the World Labs CLI, and an API key with task access. Blender workflows require Blender 5.3+ with Atlas enabled; Blender MCP is recommended, with ordinary Blender Python as an alternative. Splats require internal API access. Tools are installed separately from this plugin.",
         "defaultPrompt": [
           "Show me which World Labs API tasks are available.",
           "Inspect the frames in my open Atlas Blender scene.",

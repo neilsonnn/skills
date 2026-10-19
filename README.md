@@ -46,9 +46,9 @@ shell. Task availability depends on your account's access.
 
 ### Atlas for Blender
 
-Atlas requires Blender 5.1+ and a separately installed Atlas extension. Blender MCP is strongly
+Atlas requires Blender 5.3+ and a separately installed Atlas extension. Blender MCP is strongly
 recommended for agent access; Blender's Python Console, Text Editor, or background Python also work.
-Gaussian splats require Blender 5.3+ and internal API access.
+Gaussian splats require internal API access.
 
 This skill targets the unreleased Blender Python API. Use an updated supplied extension build;
 the currently published ZIP still uses the old CLI. See [setup](skills/atlas-blender/references/setup.md)
